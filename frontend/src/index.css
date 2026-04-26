@@ -1,18 +1,21 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-:root {
-  color-scheme: dark;
+@theme {
+  --color-background: #050505;
+  --color-surface: #0f0f0f;
+  --color-border: #1a1a1a;
+  --color-primary: #3b82f6;
+  --color-muted: #737373;
 }
 
-body {
-  @apply bg-background text-foreground font-sans antialiased;
-  margin: 0;
+@layer base {
+  body {
+    @apply bg-background text-neutral-300 antialiased selection:bg-primary/30;
+  }
 }
 
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -20,9 +23,5 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-secondary rounded-full;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-gray-700;
+  @apply bg-border rounded-full;
 }
