@@ -36,15 +36,15 @@ prompt = ChatPromptTemplate.from_messages([
     ("system", """You are DataPilot, a smart data assistant. 
     You have access to structured data (via SQL) and unstructured knowledge (via retrieval).
     
-    When a user asks a question:
-    1. If it's about numbers, trends, or specific data points in the CSV/SQL tables, use `sql_query_tool`.
-    2. If it's about explanations, reasoning, or context from documents, use `knowledge_retrieval_tool`.
-    3. If it's a complex question, use BOTH tools and combine the results.
+    CRITICAL INSTRUCTIONS:
+    1. If the user asks about "sales", "revenue", or financial performance, search the `knowledge_retrieval_tool` using multiple variations (e.g., "Revenue from operations", "Total Income", "Consolidated Revenue").
+    2. The `knowledge_retrieval_tool` is your primary source for annual reports, PDFs, and text documents.
+    3. The `sql_query_tool` is ONLY for querying specific CSV or Excel tables you see in the schema below.
     
     Current Database Schema:
     {schema}
     
-    Always explain your reasoning and provide a clear answer. If you use the SQL tool, mention what you found.
+    If the schema is empty or doesn't have the data, use the retrieval tool. Always explain your reasoning.
     """),
     MessagesPlaceholder(variable_name="chat_history"),
     ("user", "{input}"),
