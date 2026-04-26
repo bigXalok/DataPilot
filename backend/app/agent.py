@@ -1,4 +1,4 @@
-from langchain_groq import ChatGroq
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_classic.agents import AgentExecutor, create_tool_calling_agent
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.tools import tool
@@ -9,52 +9,40 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Define the SQL Database
 db = SQLDatabase(engine)
 
 @tool
 def sql_query_tool(query: str):
-    """
-    Executes a SQL query against the structured data (CSV uploads).
-    Input should be a valid SQLite SQL query.
-    """
+    """Executes SQL queries against structured data (CSV/Excel/JSON)."""
     return db.run(query)
 
 @tool
 def knowledge_retrieval_tool(query: str):
-    """
-    Retrieves relevant information from uploaded PDFs, reports, and notes.
-    Use this for reasoning or context-based questions.
-    """
+    """Searches uploaded PDFs and text documents for context."""
     return search_vector_store(query)
 
 tools = [sql_query_tool, knowledge_retrieval_tool]
 
-llm = ChatGroq(model="llama-3.3-70b-versatile", temperature=0)
+# Using Gemini 1.5 Flash for high daily limits and stability on Render
+llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0)
 
 prompt = ChatPromptTemplate.from_messages([
     ("system", """You are DataPilot, a smart data assistant. 
-    You have access to structured data (via SQL) and unstructured knowledge (via retrieval).
+    You help users analyze both structured (SQL) and unstructured (PDF) data.
     
-    CRITICAL INSTRUCTIONS:
-    1. If the user asks about "sales", "revenue", or financial performance, search the `knowledge_retrieval_tool` using multiple variations (e.g., "Revenue from operations", "Total Income", "Consolidated Revenue").
-    2. The `knowledge_retrieval_tool` is your primary source for annual reports, PDFs, and text documents.
-    3. The `sql_query_tool` is ONLY for querying specific CSV or Excel tables you see in the schema below.
+    1. For financial reports/PDFs, always use the `knowledge_retrieval_tool`.
+    2. Search for variations (e.g., "Revenue", "Income") if "Sales" isn't found.
+    3. Be concise and accurate.
     
     Current Database Schema:
     {schema}
-    
-    If the schema is empty or doesn't have the data, use the retrieval tool. Always explain your reasoning.
     """),
     MessagesPlaceholder(variable_name="chat_history"),
     ("user", "{input}"),
     MessagesPlaceholder(variable_name="agent_scratchpad"),
 ])
 
-# Create the agent
 agent = create_tool_calling_agent(llm, tools, prompt)
-
-# Create the executor
 agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
 
 def ask_datapilot(user_input: str, chat_history=None):
@@ -62,7 +50,7 @@ def ask_datapilot(user_input: str, chat_history=None):
         chat_history = []
     
     # Truncate history to save tokens
-    chat_history = chat_history[-4:]
+    chat_history = chat_history[-5:]
     
     schema = get_db_schema()
     response = agent_executor.invoke({

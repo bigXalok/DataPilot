@@ -1,21 +1,18 @@
-# Python
+# Environments
+.env
 venv/
 __pycache__/
-*.py[cod]
-*$py.class
-.env
+*.pyc
 
-# Node
+# Data
+uploads/
+faiss_index/
+datapilot.db
+
+# Logs
+*.log
+
+# Frontend
 node_modules/
 dist/
-.eslintcache
-
-# Databases
-*.db
-faiss_index/
-
-# OS
-.DS_Store
-
-# Uploads
-uploads/
+build/
