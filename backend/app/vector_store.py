@@ -24,7 +24,7 @@ def process_file(file_path: str):
     pages = loader.load()
     
     # Large chunk size for 100+ page documents
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=2000, chunk_overlap=200)
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1500, chunk_overlap=150)
     docs = text_splitter.split_documents(pages)
     
     # Use local embeddings
@@ -46,7 +46,7 @@ def get_retriever():
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
     if os.path.exists(VECTOR_DB_PATH):
         vectorstore = FAISS.load_local(VECTOR_DB_PATH, embeddings, allow_dangerous_deserialization=True)
-        return vectorstore.as_retriever(search_kwargs={"k": 7})
+        return vectorstore.as_retriever(search_kwargs={"k": 3})
     return None
 
 def search_vector_store(query: str):
