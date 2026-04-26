@@ -27,11 +27,27 @@ def process_file(file_path: str):
     
     embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")
     
+    # Process in batches to avoid rate limits
+    batch_size = 50
+    import time
+    
     if os.path.exists(VECTOR_DB_PATH):
         vectorstore = FAISS.load_local(VECTOR_DB_PATH, embeddings, allow_dangerous_deserialization=True)
-        vectorstore.add_documents(docs)
+        for i in range(0, len(docs), batch_size):
+            batch = docs[i:i + batch_size]
+            vectorstore.add_documents(batch)
+            if i + batch_size < len(docs):
+                time.sleep(2)  # Pause to avoid rate limits
     else:
-        vectorstore = FAISS.from_documents(docs, embeddings)
+        # First batch creates the index
+        first_batch = docs[0:batch_size]
+        vectorstore = FAISS.from_documents(first_batch, embeddings)
+        
+        # Subsequent batches add to it
+        for i in range(batch_size, len(docs), batch_size):
+            batch = docs[i:i + batch_size]
+            vectorstore.add_documents(batch)
+            time.sleep(2)  # Pause to avoid rate limits
     
     vectorstore.save_local(VECTOR_DB_PATH)
     return len(docs)
