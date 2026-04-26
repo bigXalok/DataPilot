@@ -22,13 +22,13 @@ def process_file(file_path: str):
     
     pages = loader.load()
     
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=3000, chunk_overlap=300)
     docs = text_splitter.split_documents(pages)
     
     embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")
     
-    # Process in batches to avoid rate limits
-    batch_size = 50
+    # Process in smaller batches with longer pauses for large files
+    batch_size = 20
     import time
     
     if os.path.exists(VECTOR_DB_PATH):
@@ -37,7 +37,7 @@ def process_file(file_path: str):
             batch = docs[i:i + batch_size]
             vectorstore.add_documents(batch)
             if i + batch_size < len(docs):
-                time.sleep(2)  # Pause to avoid rate limits
+                time.sleep(3)  # Pause to avoid rate limits
     else:
         # First batch creates the index
         first_batch = docs[0:batch_size]
@@ -47,7 +47,7 @@ def process_file(file_path: str):
         for i in range(batch_size, len(docs), batch_size):
             batch = docs[i:i + batch_size]
             vectorstore.add_documents(batch)
-            time.sleep(2)  # Pause to avoid rate limits
+            time.sleep(3)  # Pause to avoid rate limits
     
     vectorstore.save_local(VECTOR_DB_PATH)
     return len(docs)
