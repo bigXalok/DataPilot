@@ -13,3 +13,5 @@ pydantic
 openai
 openpyxl
 langchain-google-genai
+langchain-huggingface
+sentence-transformers

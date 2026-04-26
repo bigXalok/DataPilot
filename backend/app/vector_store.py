@@ -1,6 +1,6 @@
 from langchain_community.document_loaders import PyPDFLoader, TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 import os
 from dotenv import load_dotenv
@@ -12,6 +12,7 @@ VECTOR_DB_PATH = "faiss_index"
 def process_file(file_path: str):
     """
     Loads a PDF or Text file, splits it into chunks, and adds it to the FAISS vector store.
+    Uses local HuggingFace embeddings to avoid cloud rate limits.
     """
     if file_path.endswith('.pdf'):
         loader = PyPDFLoader(file_path)
@@ -22,32 +23,18 @@ def process_file(file_path: str):
     
     pages = loader.load()
     
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=3000, chunk_overlap=300)
+    # Large chunk size for 100+ page documents
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=2000, chunk_overlap=200)
     docs = text_splitter.split_documents(pages)
     
-    embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")
-    
-    # Process in smaller batches with longer pauses for large files
-    batch_size = 20
-    import time
+    # Use local embeddings
+    embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
     
     if os.path.exists(VECTOR_DB_PATH):
         vectorstore = FAISS.load_local(VECTOR_DB_PATH, embeddings, allow_dangerous_deserialization=True)
-        for i in range(0, len(docs), batch_size):
-            batch = docs[i:i + batch_size]
-            vectorstore.add_documents(batch)
-            if i + batch_size < len(docs):
-                time.sleep(3)  # Pause to avoid rate limits
+        vectorstore.add_documents(docs)
     else:
-        # First batch creates the index
-        first_batch = docs[0:batch_size]
-        vectorstore = FAISS.from_documents(first_batch, embeddings)
-        
-        # Subsequent batches add to it
-        for i in range(batch_size, len(docs), batch_size):
-            batch = docs[i:i + batch_size]
-            vectorstore.add_documents(batch)
-            time.sleep(3)  # Pause to avoid rate limits
+        vectorstore = FAISS.from_documents(docs, embeddings)
     
     vectorstore.save_local(VECTOR_DB_PATH)
     return len(docs)
@@ -56,7 +43,7 @@ def get_retriever():
     """
     Returns a retriever for searching the vector store.
     """
-    embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")
+    embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
     if os.path.exists(VECTOR_DB_PATH):
         vectorstore = FAISS.load_local(VECTOR_DB_PATH, embeddings, allow_dangerous_deserialization=True)
         return vectorstore.as_retriever(search_kwargs={"k": 3})
