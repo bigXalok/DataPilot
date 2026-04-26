@@ -30,7 +30,7 @@ def knowledge_retrieval_tool(query: str):
 
 tools = [sql_query_tool, knowledge_retrieval_tool]
 
-llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0)
+llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0)
 
 prompt = ChatPromptTemplate.from_messages([
     ("system", """You are DataPilot, a smart data assistant. 
