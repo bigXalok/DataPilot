@@ -25,7 +25,7 @@ def process_file(file_path: str):
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
     docs = text_splitter.split_documents(pages)
     
-    embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+    embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")
     
     if os.path.exists(VECTOR_DB_PATH):
         vectorstore = FAISS.load_local(VECTOR_DB_PATH, embeddings, allow_dangerous_deserialization=True)
@@ -40,7 +40,7 @@ def get_retriever():
     """
     Returns a retriever for searching the vector store.
     """
-    embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+    embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")
     if os.path.exists(VECTOR_DB_PATH):
         vectorstore = FAISS.load_local(VECTOR_DB_PATH, embeddings, allow_dangerous_deserialization=True)
         return vectorstore.as_retriever(search_kwargs={"k": 3})
