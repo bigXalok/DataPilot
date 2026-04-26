@@ -1,61 +1,80 @@
-# DataPilot 🚀
+# DataPilot — AI-Powered Business Intelligence Assistant
 
-DataPilot is a powerful AI-driven data analysis assistant that handles both **structured data** (CSV, Excel, JSON) and **unstructured data** (PDF, TXT) using a hybrid RAG (Retrieval-Augmented Generation) architecture.
+DataPilot is an AI-driven data analysis platform that enables users to interact with both structured and unstructured data using natural language.
 
-## Features
-- **Hybrid Analysis**: Seamlessly switch between querying SQL databases and searching through large PDF reports.
-- **SQL Agent**: Automatically converts your natural language questions into SQL queries to analyze spreadsheets.
-- **Vector Search**: Uses FAISS and Gemini Embeddings to extract insights from 100+ page documents.
-- **Modern UI**: A premium, responsive interface built with React and sleek CSS.
+Built using a Hybrid RAG (Retrieval-Augmented Generation) architecture, DataPilot allows seamless querying of datasets (CSV, Excel, SQL) alongside deep contextual understanding from documents (PDF, TXT).
+
+---
+
+## Key Features
+
+### Hybrid Intelligence (Structured + Unstructured)
+- Query tabular data using natural language to SQL conversion
+- Retrieve insights from large documents using vector search (RAG)
+
+### SQL Agent (NL → SQL)
+- Converts user queries into optimized SQL
+- Supports CSV/Excel auto-ingested into a database
+- Enables non-technical users to analyze data easily
+
+### Document Intelligence (RAG)
+- Processes large PDFs (100+ pages)
+- Uses embeddings and FAISS for semantic search
+- Provides context-aware answers from reports
+
+### Conversational Interface
+- Chat-based interaction with data
+- Supports follow-up queries and contextual understanding
+
+### Modern UI
+- Clean, responsive interface
+- Split layout: Data Upload and AI Chat
+- Designed for a SaaS-like experience
+
+---
+
+## Architecture Overview
+
+DataPilot follows a Hybrid RAG Architecture:
+
+- Structured Pipeline  
+  CSV/Excel → SQLite → SQL Agent → Query Execution  
+
+- Unstructured Pipeline  
+  PDF/TXT → Chunking → Embeddings → FAISS → Retrieval  
+
+- LLM Layer  
+  Combines SQL results and retrieved context to generate final responses  
+
+---
 
 ## Tech Stack
-- **Backend**: FastAPI, SQLAlchemy, LangChain
-- **AI Engine**: Google Gemini (Flash 1.5)
-- **Database**: SQLite (Structured) & FAISS (Unstructured)
-- **Frontend**: React, Vite, Axios
+
+### Backend
+- FastAPI  
+- SQLAlchemy  
+- LangChain  
+
+### AI Engine
+- Google Gemini (Flash 1.5)
+
+### Data Layer
+- SQLite (Structured Data)  
+- FAISS (Vector Database)
+
+### Frontend
+- React  
+- Vite  
+- Axios  
+
+---
 
 ## Local Setup
 
-### 1. Backend
+### Backend
+
 ```bash
 cd backend
 python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+source venv/bin/activate   # Windows: venv\Scripts\activate
 pip install -r requirements.txt
-```
-Create a `.env` file in the `backend` folder:
-```env
-GOOGLE_API_KEY=your_gemini_api_key
-```
-Run the server:
-```bash
-python main.py
-```
-
-### 2. Frontend
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-## Deployment on Render
-
-### Backend Setup:
-1. Create a new **Web Service** on Render.
-2. **Root Directory**: `backend`
-3. **Build Command**: `pip install -r requirements.txt`
-4. **Start Command**: `gunicorn -w 1 -k uvicorn.workers.UvicornWorker main:app`
-5. **Env Vars**: Add `GOOGLE_API_KEY`.
-
-### Frontend Setup:
-1. Create a new **Static Site** on Render.
-2. **Root Directory**: `frontend`
-3. **Build Command**: `npm run build`
-4. **Publish Directory**: `dist`
-5. **Env Vars**: Add `VITE_API_URL` pointing to your backend URL.
-
-## How to Use
-1. **Upload**: Drag and drop a CSV or a large PDF.
-2. **Analyze**: Ask questions like *"What were the total sales in the North region?"* or *"Summarize the financial risks mentioned in the annual report."*
-3. **Visualize**: DataPilot will provide structured answers and context-aware insights.
