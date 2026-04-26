@@ -61,6 +61,9 @@ def ask_datapilot(user_input: str, chat_history=None):
     if chat_history is None:
         chat_history = []
     
+    # Truncate history to save tokens
+    chat_history = chat_history[-4:]
+    
     schema = get_db_schema()
     response = agent_executor.invoke({
         "input": user_input,
