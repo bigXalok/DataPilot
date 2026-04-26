@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+python-multipart
+pandas
+sqlalchemy
+langchain
+langchain-openai
+langchain-community
+faiss-cpu
+pypdf
+python-dotenv
+pydantic
+openai

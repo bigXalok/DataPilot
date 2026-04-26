@@ -1,0 +1,21 @@
+# Python
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+
+# Node
+node_modules/
+dist/
+.eslintcache
+
+# Databases
+*.db
+faiss_index/
+
+# OS
+.DS_Store
+
+# Uploads
+uploads/
