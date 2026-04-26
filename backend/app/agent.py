@@ -1,10 +1,9 @@
-from langchain_openai import ChatOpenAI
-from langchain_classic.agents import AgentExecutor, create_openai_tools_agent
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain.agents import AgentExecutor, create_tool_calling_agent
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.tools import tool
 from .database import get_db_schema, engine
 from .vector_store import search_vector_store
-from langchain_community.agent_toolkits import SQLDatabaseToolkit
 from langchain_community.utilities import SQLDatabase
 from dotenv import load_dotenv
 
@@ -31,7 +30,7 @@ def knowledge_retrieval_tool(query: str):
 
 tools = [sql_query_tool, knowledge_retrieval_tool]
 
-llm = ChatOpenAI(model="gpt-4o", temperature=0)
+llm = ChatGoogleGenerativeAI(model="gemini-1.5-pro", temperature=0)
 
 prompt = ChatPromptTemplate.from_messages([
     ("system", """You are DataPilot, a smart data assistant. 
@@ -53,7 +52,7 @@ prompt = ChatPromptTemplate.from_messages([
 ])
 
 # Create the agent
-agent = create_openai_tools_agent(llm, tools, prompt)
+agent = create_tool_calling_agent(llm, tools, prompt)
 
 # Create the executor
 agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)

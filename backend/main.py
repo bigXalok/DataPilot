@@ -1,7 +1,7 @@
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
-from app.database import csv_to_sql
-from app.vector_store import process_pdf
+from app.database import file_to_sql
+from app.vector_store import process_file
 from app.agent import ask_datapilot
 import shutil
 import os
@@ -29,16 +29,21 @@ async def upload_file(file: UploadFile = File(...)):
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
     
-    if file.filename.endswith(".csv"):
-        table_name = file.filename.replace(".csv", "").lower()
-        csv_to_sql(file_path, table_name)
-        return {"message": f"CSV '{file.filename}' processed into table '{table_name}'"}
-    
-    elif file.filename.endswith(".pdf"):
-        num_chunks = process_pdf(file_path)
-        return {"message": f"PDF '{file.filename}' processed into {num_chunks} vector chunks"}
-    
-    return {"error": "Unsupported file format. Please upload CSV or PDF."}
+    try:
+        filename_lower = file.filename.lower()
+        
+        if filename_lower.endswith(('.csv', '.xls', '.xlsx', '.json')):
+            table_name = "".join(filter(str.isalnum, file.filename.split('.')[0])).lower()
+            file_to_sql(file_path, table_name)
+            return {"message": f"Structured file '{file.filename}' processed into table '{table_name}'"}
+        
+        elif filename_lower.endswith(('.pdf', '.txt')):
+            num_chunks = process_file(file_path)
+            return {"message": f"Unstructured file '{file.filename}' processed into {num_chunks} vector chunks"}
+        
+        return {"error": "Unsupported file format. Please upload CSV, XLSX, JSON, PDF, or TXT."}
+    except Exception as e:
+        return {"error": f"Processing failed: {str(e)}"}
 
 @app.post("/chat")
 async def chat(message: str = Form(...)):

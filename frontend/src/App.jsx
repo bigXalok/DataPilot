@@ -6,7 +6,9 @@ import {
   Database, 
   MessageSquare,
   Loader2,
-  Paperclip
+  Paperclip,
+  FileSpreadsheet,
+  FileJson
 } from 'lucide-react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -41,13 +43,18 @@ const App = () => {
 
     try {
       const res = await axios.post(`${API_BASE_URL}/upload`, formData);
-      setFiles(prev => [...prev, { name: file.name, type: file.name.endsWith('.csv') ? 'CSV' : 'PDF' }]);
-      setMessages(prev => [...prev, { 
-        role: 'assistant', 
-        content: `Uploaded ${file.name}.` 
-      }]);
+      if (res.data.error) {
+        setMessages(prev => [...prev, { role: 'assistant', content: `Upload failed: ${res.data.error}` }]);
+      } else {
+        setFiles(prev => [...prev, { name: file.name, type: file.name.split('.').pop().toUpperCase() }]);
+        setMessages(prev => [...prev, { 
+          role: 'assistant', 
+          content: res.data.message || `Uploaded ${file.name}.` 
+        }]);
+      }
     } catch (err) {
-      setMessages(prev => [...prev, { role: 'assistant', content: "Upload failed." }]);
+      const errorMsg = err.response?.data?.error || err.message || "Upload failed.";
+      setMessages(prev => [...prev, { role: 'assistant', content: `Upload failed: ${errorMsg}` }]);
     } finally {
       setUploading(false);
     }
@@ -88,14 +95,14 @@ const App = () => {
             <div className="space-y-1">
               {files.map((file, i) => (
                 <div key={i} className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-white/5 transition-colors group">
-                  {file.type === 'CSV' ? <Database size={14} /> : <FileText size={14} />}
+                  {file.type === 'CSV' || file.type === 'XLSX' ? <FileSpreadsheet size={14} /> : file.type === 'JSON' ? <FileJson size={14} /> : <FileText size={14} />}
                   <span className="text-xs truncate flex-1">{file.name}</span>
                 </div>
               ))}
               <label className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-white/5 cursor-pointer text-neutral-500 hover:text-neutral-300 transition-all group mt-2 border border-dashed border-border/50 mx-2">
                 <Paperclip size={14} />
                 <span className="text-xs">Attach file</span>
-                <input type="file" className="hidden" onChange={handleFileUpload} accept=".csv,.pdf" />
+                <input type="file" className="hidden" onChange={handleFileUpload} accept=".csv,.pdf,.xlsx,.json,.txt" />
                 {uploading && <Loader2 size={12} className="animate-spin ml-auto" />}
               </label>
             </div>
@@ -154,7 +161,7 @@ const App = () => {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                 placeholder="Message DataPilot..."
-                className="flex-1 bg-transparent border-none focus:ring-0 text-[14px] text-neutral-200 placeholder-neutral-600 py-3"
+                className="flex-1 bg-transparent border-none focus:ring-0 outline-none text-[14px] text-neutral-200 placeholder-neutral-600 py-3"
               />
               <button 
                 onClick={handleSend}
