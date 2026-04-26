@@ -1,4 +1,4 @@
-# DataPilot — AI-Powered Business Intelligence Assistant
+# DataPilot  AI-Powered Business Intelligence Assistant
 
 DataPilot is an AI-driven data analysis platform that enables users to interact with both structured and unstructured data using natural language.
 
