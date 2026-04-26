@@ -55,6 +55,6 @@ def search_vector_store(query: str):
     """
     retriever = get_retriever()
     if retriever:
-        docs = retriever.get_relevant_documents(query)
+        docs = retriever.invoke(query)
         return "\n\n".join([doc.page_content for doc in docs])
     return "No relevant context found in uploaded documents."
